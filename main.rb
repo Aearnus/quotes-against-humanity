@@ -3,6 +3,7 @@ require "tilt/erb"
 require "em-websocket"
 require "eventmachine"
 require "json"
+require "socket"
 
 $players = []
 $socketClients = []
@@ -42,7 +43,7 @@ def getPlayerFromIP(ip)
 end
 
 def getSockIP(sock)
-	port, ip = EventMachine::Socket.unpack_sockaddr_in(sock.get_peername)
+	port, ip = Socket.unpack_sockaddr_in(sock.get_peername)
 	return ip
 end
 

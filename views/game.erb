@@ -4,23 +4,39 @@
 			Quotes Against Humanity
 		</title>
 		<script type="text/javascript">
+		//--------HELPER FUNCTIONS--------
+		function errorDialog(problem) {
+			alert("Something has gone terribly wrong! Please refresh the page. Report this to the developer: " + problem);
+		}
+		function cardFromId(id) {
+			var tempCard = cards[id];
+			if (tempCard["id"] != id) {
+				errorDialog("cardFromIdMismatch");
+			}
+			return tempCard;
+		}
+
+		//--------INVENTORY FUNCTIONS--------
 		function getInventory() {
 			gameSocket.send(JSON.stringify({type: "getInventory"}));
 		}
-
-		function displayInventory(inventoryArrayString) {
-			var inventoryArray = JSON.parse(inventoryArrayString);
-			for (var i = 0; i++; i < inventoryArray.length) {
+		function displayInventory(inventoryArray) {
+			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
-				cardElement.innerHTML = inventoryArray[i];
+				cardElement.id = "card-" + inventoryArray[i];
+				cardElement.name = inventoryArray[i];
+				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
 		}
 
+		//--------SOCKET FUNCTIONS--------
 		function parseSocketMessage(e) {
-			switch (e.data["type"]) {
+			console.log(e.data);
+			var message = JSON.parse(e.data);
+			switch (message["type"]) {
 				case "inventory": //updates client inventory
-					displayInventory(e.data["data"]);
+					displayInventory(message["data"]);
 					break;
 				case "timer": //updates client countdown timer
 
@@ -29,14 +45,7 @@
 
 					break;
 			}
-			//console.log(e);
-			//console.log(e.data);
-			//var socketMessage = JSON.parse(e.data);
-			//console.log(socketMessage);
-			//var chatMessage = socketMessage["message"];
-			//document.getElementById("chatBox").innerHTML += "<br>" + chatMessage;
 		}
-
 		function sockMe() {
 			gameSocket = new WebSocket("ws://98.177.203.231:12975/");
 			gameSocket.onopen = function () {
@@ -51,6 +60,7 @@
 			gameSocket.onmessage = parseSocketMessage;
 		}
 
+		//--------INIT FUNCTION--------
 		function init() {
 			sockMe();
 			cards = <%= $CARDS %>
