@@ -5,25 +5,10 @@ require "eventmachine"
 require "json"
 require "socket"
 
+
+#--------HELPER FUNCTIONS--------
 $players = []
 $socketClients = []
-$CARDS = File.read("public/cards.json")
-$NUMBER_OF_CARDS = 209
-$CARDS_IN_A_HAND = 8
-
-class Player
-	attr_accessor :card_inventory #list of card IDs
-	attr_reader :nick, :ip
-	def initialize(nick, ip)
-		@card_inventory = []
-		$CARDS_IN_A_HAND.times do 
-			@card_inventory << rand(0 .. $NUMBER_OF_CARDS - 1)
-		end
-		@nick = nick
-		@ip = ip
-	end
-end
-
 def playerExistWithIP(ip)
 	exist = false
 	$players.each do |cP|
@@ -45,6 +30,55 @@ end
 def getSockIP(sock)
 	port, ip = Socket.unpack_sockaddr_in(sock.get_peername)
 	return ip
+end
+
+def sendToAll(msg)
+	$socketClients.each do |socket|
+		socket.send msg
+	end
+end
+
+
+#--------GAME OPTIONS--------
+$CARDS = File.read("public/cards.json")
+$NUMBER_OF_WHITE_CARDS = 209
+$NUMBER_OF_BLACK_CARDS = 5
+$CARDS_IN_A_HAND = 8
+$MAX_TIME = 60
+#--------GAME FUNCTIONS--------
+class Player
+	attr_accessor :card_inventory #list of card IDs
+	attr_reader :nick, :ip
+	def initialize(nick, ip)
+		@card_inventory = []
+		$CARDS_IN_A_HAND.times do 
+			@card_inventory << rand(0 .. $NUMBER_OF_WHITE_CARDS - 1)
+		end
+		@nick = nick
+		@ip = ip
+	end
+end
+
+#currentScene = 0: choosing cards, 1: 
+#blackCard = id of current black card
+#timer = current number of countdown clock
+#placedCards = array of id's of cards that were placed
+#cardChooser = index of the player that's the current cardChooser
+$GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0}
+
+def updateGame() 
+	loop do
+		sendToAll $GAME_STATE
+		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
+		if $GAME_STATE[:timer] < 0 
+			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
+			$GAME_STATE[:timer] = $MAX_TIME
+		end
+		sleep 1
+	end
+end
+Thread.new do
+	updateGame()
 end
 
 EventMachine.run do
@@ -85,15 +119,11 @@ EventMachine.run do
 
 		ws.onmessage do |msg|
 			puts "got data #{msg}"
-			$socketClients.each do |socket|
-				socket.send msg
-			end
+			sendToAll(msg)
 		end
 
 		ws.onclose do
-			$socketClients.each do |socket|
-				socket.send JSON.generate({type: "chat", message: "Someone left the chat!", author: "Server"})
-			end
+			socket.sendToAll(JSON.generate({type: "chat", message: "Someone left the chat!", author: "Server"}))
 		end
 	end
 

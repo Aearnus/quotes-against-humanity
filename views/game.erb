@@ -38,11 +38,7 @@
 				case "inventory": //updates client inventory
 					displayInventory(message["data"]);
 					break;
-				case "timer": //updates client countdown timer
-
-					break;
-				case "blackCard": //updates currently shown black card
-
+				case "gameState": //everything that isn't your inventory
 					break;
 			}
 		}
@@ -70,6 +66,10 @@
 		</script>
 	</head>
 	<body>
+		<h2>Quotes Against Humanity</h2>
+		<h3>Cards in play:</h3>
+		<p id="blackCard" style="background: rgb(255, 255, 255); font-color: rgb(0,0,0);"></p>
+		<h3>Your cards:</h3>
 		<p id="cardInventory"></p>
 	</body>
 </html>
