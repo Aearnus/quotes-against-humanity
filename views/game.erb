@@ -1,0 +1,49 @@
+<html>
+	<head>
+		<title>
+			Quotes Against Humanity
+		</title>
+		<script type="text/javascript">
+		function parseSocketMessage(e) {
+			console.log(e);
+			console.log(e.data);
+			var socketMessage = JSON.parse(e.data);
+			console.log(socketMessage);
+			var chatMessage = socketMessage["message"];
+			document.getElementById("chatBox").innerHTML += "<br>" + chatMessage;
+		}
+
+
+
+		function sendChat() {
+			gameSocket.send(JSON.stringify({type: "chat", message: document.getElementById("chatInput").value, author: "Anonymous"}));
+		}
+
+		function sockMe() {
+			gameSocket = new WebSocket("ws://98.177.203.231:12975/");
+			gameSocket.onopen = function () {
+				console.log("connected to server");
+			}
+			gameSocket.onclose = function () {
+				console.log("connection unboop");
+			}
+			gameSocket.onerror = function () {
+				console.log("connection broke boop");
+			}
+			gameSocket.onmessage = parseSocketMessage;
+		}
+
+		function init() {
+			sockMe();
+		}
+
+		window.onload = init;
+		</script>
+	</head>
+	<body>
+		<p>The Chat</p>
+		<p id="chatBox" style="height: 90%; overflow-y: scroll;"></p>
+		<input type="text" id="chatInput">
+		<button onclick="sendChat()">Send Msg</button>
+	</body>
+</html>
