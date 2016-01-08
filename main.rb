@@ -154,6 +154,7 @@ EventMachine.run do
 					tempInventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory
 					cardsPlayed.each do |card|
 						tempInventory.delete_at(tempInventory.index(card))
+						$GAME_STATE[:placedCards] << card
 					end
 					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
 					ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
