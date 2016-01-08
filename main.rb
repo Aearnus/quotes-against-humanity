@@ -1,17 +1,23 @@
 require "sinatra/base"
 require "tilt/erb"
-require "websocket-eventmachine-server"
+require "em-websocket"
 require "eventmachine"
 require "json"
 
 $players = []
 $socketClients = []
+$CARDS = File.read("public/cards.json")
+$NUMBER_OF_CARDS = 209
+$CARDS_IN_A_HAND = 8
 
 class Player
 	attr_accessor :card_inventory #list of card IDs
 	attr_reader :nick, :ip
 	def initialize(nick, ip)
 		@card_inventory = []
+		$CARDS_IN_A_HAND.times do 
+			@card_inventory << rand(0 .. $NUMBER_OF_CARDS - 1)
+		end
 		@nick = nick
 		@ip = ip
 	end
@@ -35,6 +41,11 @@ def getPlayerFromIP(ip)
 	end
 end
 
+def getSockIP(sock)
+	port, ip = EventMachine::Socket.unpack_sockaddr_in(sock.get_peername)
+	return ip
+end
+
 EventMachine.run do
 	class CardPage < Sinatra::Base
 		get "/" do
@@ -50,7 +61,7 @@ EventMachine.run do
 		end
 
 		post "/setUpPlayer" do
-			puts "making new player w/ nick #{params["nickname"]} and ip #{request.ip}"
+			puts "making new player w/ nick #{params["nick"]} and ip #{request.ip}"
 			$players << Player.new(params["nick"], request.ip)
 			redirect to("/")
 		end
@@ -61,17 +72,14 @@ EventMachine.run do
 			end
 			erb :game
 		end
-
-		get "cards.json" do
-			File.read("cards.json")
-		end
 	end
 
-	WebSocket::EventMachine::Server.start(:host => '0.0.0.0', :port => 12975) do |ws| # <-- Added |ws|
+	EventMachine::WebSocket.run(:host => '0.0.0.0', :port => 12975) do |ws| # <-- Added |ws|
 		# Websocket code here
 		ws.onopen do |handshake|
 			$socketClients << ws
-			ws.send JSON.generate({type: "chat", message: "Welcome to the chat!", author: "Server"})
+			puts getSockIP(ws)
+			ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
 		end
 
 		ws.onmessage do |msg|

@@ -4,19 +4,37 @@
 			Quotes Against Humanity
 		</title>
 		<script type="text/javascript">
-		function parseSocketMessage(e) {
-			console.log(e);
-			console.log(e.data);
-			var socketMessage = JSON.parse(e.data);
-			console.log(socketMessage);
-			var chatMessage = socketMessage["message"];
-			document.getElementById("chatBox").innerHTML += "<br>" + chatMessage;
+		function getInventory() {
+			gameSocket.send(JSON.stringify({type: "getInventory"}));
 		}
 
+		function displayInventory(inventoryArrayString) {
+			var inventoryArray = JSON.parse(inventoryArrayString);
+			for (var i = 0; i++; i < inventoryArray.length) {
+				var cardElement = document.createElement("p");
+				cardElement.innerHTML = inventoryArray[i];
+				document.getElementById("cardInventory").appendChild(cardElement);
+			}
+		}
 
+		function parseSocketMessage(e) {
+			switch (e.data["type"]) {
+				case "inventory": //updates client inventory
+					displayInventory(e.data["data"]);
+					break;
+				case "timer": //updates client countdown timer
 
-		function sendChat() {
-			gameSocket.send(JSON.stringify({type: "chat", message: document.getElementById("chatInput").value, author: "Anonymous"}));
+					break;
+				case "blackCard": //updates currently shown black card
+
+					break;
+			}
+			//console.log(e);
+			//console.log(e.data);
+			//var socketMessage = JSON.parse(e.data);
+			//console.log(socketMessage);
+			//var chatMessage = socketMessage["message"];
+			//document.getElementById("chatBox").innerHTML += "<br>" + chatMessage;
 		}
 
 		function sockMe() {
@@ -35,15 +53,13 @@
 
 		function init() {
 			sockMe();
+			cards = <%= $CARDS %>
 		}
 
 		window.onload = init;
 		</script>
 	</head>
 	<body>
-		<p>The Chat</p>
-		<p id="chatBox" style="height: 90%; overflow-y: scroll;"></p>
-		<input type="text" id="chatInput">
-		<button onclick="sendChat()">Send Msg</button>
+		<p id="cardInventory"></p>
 	</body>
 </html>
