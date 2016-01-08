@@ -19,6 +19,14 @@ def playerExistWithIP(ip)
 	return exist
 end
 
+def getPlayerIndexFromIP(ip)
+	$players.each_with_index do |cP, index|
+		if cP.ip == ip
+			return index
+		end
+	end
+end
+
 def getPlayerFromIP(ip)
 	$players.each do |cP|
 		if cP.ip == ip
@@ -48,6 +56,7 @@ $MAX_TIME = 60
 #--------GAME FUNCTIONS--------
 class Player
 	attr_accessor :card_inventory #list of card IDs
+	attr_accessor :can_place_cards
 	attr_reader :nick, :ip
 	def initialize(nick, ip)
 		@card_inventory = []
@@ -56,6 +65,9 @@ class Player
 		end
 		@nick = nick
 		@ip = ip
+		@can_place_cards = false
+	end
+	def serialize()
 	end
 end
 
@@ -66,20 +78,35 @@ end
 #cardChooser = index of the player that's the current cardChooser
 $GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0}
 
+def sendGameState()
+	sendToAll JSON.generate({type: "gameState", data: $GAME_STATE})
+end
+
 def updateGame() 
 	loop do
-		sendToAll $GAME_STATE
+		sendGameState()
 		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
 		if $GAME_STATE[:timer] < 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
+			if $GAME_STATE[:currentScene] == 0
+				$players.each do |cP|
+					cP.can_place_cards = true
+				end
+			elsif $GAME_STATE[:currentScene] == 0
+				$players.each do |cP|
+					cP.can_place_cards = false
+				end
+			end
 			$GAME_STATE[:timer] = $MAX_TIME
 		end
 		sleep 1
 	end
 end
 Thread.new do
+	puts "opened game update thread"
 	updateGame()
 end
+puts "outside of game update thread"
 
 EventMachine.run do
 	class CardPage < Sinatra::Base
@@ -110,20 +137,31 @@ EventMachine.run do
 	end
 
 	EventMachine::WebSocket.run(:host => '0.0.0.0', :port => 12975) do |ws| # <-- Added |ws|
-		# Websocket code here
+		#when someone connects, they need their inventory and initial game state
 		ws.onopen do |handshake|
 			$socketClients << ws
 			puts getSockIP(ws)
 			ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
+			sendGameState()
 		end
 
 		ws.onmessage do |msg|
-			puts "got data #{msg}"
-			sendToAll(msg)
+			message = JSON.parse msg
+			case message["type"]
+			when "playCard" #called once for both single and multiple cards played
+				if (getPlayerFromIP(getSockIP(ws)).can_place_cards == true)
+					cardsPlayed = message["data"]
+					tempInventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory
+					cardsPlayed.each do |card|
+						tempInventory.delete_at(tempInventory.index(card))
+					end
+					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
+					ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
+				end
+			end
 		end
 
 		ws.onclose do
-			socket.sendToAll(JSON.generate({type: "chat", message: "Someone left the chat!", author: "Server"}))
 		end
 	end
 

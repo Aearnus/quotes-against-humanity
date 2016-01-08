@@ -16,10 +16,15 @@
 			return tempCard;
 		}
 
-		//--------INVENTORY FUNCTIONS--------
-		function getInventory() {
-			gameSocket.send(JSON.stringify({type: "getInventory"}));
+		//--------RANDOM RENDERING FUNCTIONS--------
+		function displayTimer(time) {
+			document.getElementById("countdownTimer").innerHTML = time;
 		}
+		function displayScene(scene) {
+			document.getElementById("sceneCounter").innerHTML = scene;
+		}
+
+		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray) {
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
@@ -39,6 +44,8 @@
 					displayInventory(message["data"]);
 					break;
 				case "gameState": //everything that isn't your inventory
+					displayTimer(message["data"]["timer"]);
+					displayScene(message["data"]["currentScene"]);
 					break;
 			}
 		}
@@ -48,10 +55,10 @@
 				console.log("connected to server");
 			}
 			gameSocket.onclose = function () {
-				console.log("connection unboop");
+				errorDialog("socketClosed");
 			}
 			gameSocket.onerror = function () {
-				console.log("connection broke boop");
+				errorDialog("socketError");
 			}
 			gameSocket.onmessage = parseSocketMessage;
 		}
