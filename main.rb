@@ -40,6 +40,14 @@ def getSockIP(sock)
 	return ip
 end
 
+def getSockFromIP(ip)
+	$socketClients.each do |ws|
+		if getSockIP(ws) == ip
+			return ws
+		end
+	end
+end
+
 def sendToAll(msg)
 	$socketClients.each do |socket|
 		socket.send msg
@@ -59,11 +67,11 @@ $CARDS = File.read("public/cards.json")
 $BLACK_CARDS = File.read("public/blackCards.json")
 $NUMBER_OF_WHITE_CARDS = 367
 $NUMBER_OF_BLACK_CARDS = 6
-$CARDS_IN_A_HAND = 8
-$MAX_TIME = 20
+$CARDS_IN_A_HAND = 12
+$MAX_TIME = 25
 #--------GAME FUNCTIONS--------
 class Player
-	attr_accessor :card_inventory, :can_place_cards, :points 
+	attr_accessor :card_inventory, :can_place_cards, :points, :is_card_chooser
 	attr_reader :nick, :ip
 	def initialize(nick, ip)
 		@card_inventory = []
@@ -72,11 +80,12 @@ class Player
 		end
 		@nick = nick
 		@ip = ip
-		@can_place_cards = true
+		@can_place_cards = false
 		@points = 0
+		@is_card_chooser = false
 	end
 	def makeSafe()
-		return {nick: @nick, points: @points}
+		return {nick: @nick, points: @points, is_card_chooser: @is_card_chooser}
 	end
 end
 
@@ -97,14 +106,24 @@ def updateGame()
 		sendGameState()
 		$GAME_STATE[:players] = serializedPlayers()
 		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
-		if $GAME_STATE[:timer] < 0 
+		#skip to end if all players have played cards
+		if ($GAME_STATE[:placedCards].length == $players.length - 1) && ($GAME_STATE[:currentScene] == 0) && ($GAME_STATE[:timer] > 5) 
+			$GAME_STATE[:timer] = 1
+		end
+		if $GAME_STATE[:timer] =< 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
 			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
 				$GAME_STATE[:placedCards] = [] #delete all the previous cards
 				$GAME_STATE[:blackCard] = rand(0 .. $NUMBER_OF_BLACK_CARDS - 1)
 				$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
-				$players.each do |cP|
-					cP.can_place_cards = true
+				$players.each_with_index do |cP, index|
+					if index == $GAME_STATE[:cardChooser] #ensure the card chooser can't place a card and stuff
+						cP.can_place_cards = false
+						cP.is_card_chooser = true
+					else
+						cP.can_place_cards = true
+						cP.is_card_chooser = false
+					end
 				end
 			elsif $GAME_STATE[:currentScene] == 1 #the card chooser is choosing the best card
 				$players.each do |cP|
@@ -179,6 +198,8 @@ EventMachine.run do
 					$players[getPlayerIndexFromIP(getSockIP(ws))].can_place_cards = false
 					ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
 				end
+			when "chooseCard" #called when the card czar chooses
+
 			end
 		end
 

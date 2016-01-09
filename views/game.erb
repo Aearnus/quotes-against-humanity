@@ -28,15 +28,19 @@
 			document.getElementById("countdownTimer").innerHTML = time;
 		}
 		function displayScene(scene) {
-			document.getElementById("sceneCounter").innerHTML = scene;
+			document.getElementById("sceneCounter").innerHTML = (scene == 0 ? "Play a card!" : "The Card Chooser is choosing.");
 		}
-		function displayPlayers(playerList) {
+		function displayPlayers(playerList, cardChooser) {
 			document.getElementById("playerList").innerHTML = "";
 			for (var i = 0; i < playerList.length; i++) {
 				var playerElement = document.createElement("p");
 				playerElement.id = "name-" + playerList[i];
 				playerElement.name = playerList[i];
-				playerElement.innerHTML = playerList[i]["nick"];
+				if (playerList[i]["is_card_chooser"] == true) {
+					playerElement.innerHTML = playerList[i]["nick"] + " (card chooser)";
+				} else {
+					playerElement.innerHTML = playerList[i]["nick"];
+				}
 				document.getElementById("playerList").appendChild(playerElement);
 			}
 		}
@@ -51,7 +55,7 @@
 			}
 		}
 		function displayBlackCard(card) {
-			document.getElementById("blackCard").innerHTML = blackCardFromId(card);
+			document.getElementById("blackCard").innerHTML = blackCardFromId(card)["quote"];
 		}
 
 		//--------INVENTORY FUNCTIONS--------
@@ -87,7 +91,7 @@
 					displayTimer(message["data"]["timer"]);
 					displayScene(message["data"]["currentScene"]);
 					displayPlacedCards(message["data"]["placedCards"]);
-					displayPlayers(message["data"]["players"]);
+					displayPlayers(message["data"]["players"], message["data"]["cardChooser"]);
 					displayBlackCard(message["data"]["blackCard"]);
 					break;
 			}
@@ -120,12 +124,11 @@
 		<h1>Quotes Against Humanity</h1>
 		<h2>Timer:</h2>
 		<h3 id="countdownTimer"></h3>
-		<h2>currentScene:</h2>
 		<h3 id="sceneCounter"></h3>
 		<h2>Players:</h2>
 		<p id="playerList"></p>
 		<h2>Cards in play:</h3>
-		<p id="blackCard" style="background: rgb(255, 255, 255); font-color: rgb(0,0,0);"></p>
+		<p id="blackCard" style="background: rgb(0,0,0); color: rgb(255, 255, 255);"></p>
 		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>
 		<p id="cardInventory"></p>
