@@ -110,7 +110,7 @@ def updateGame()
 		if ($GAME_STATE[:placedCards].length == $players.length - 1) && ($GAME_STATE[:currentScene] == 0) && ($GAME_STATE[:timer] > 5) 
 			$GAME_STATE[:timer] = 1
 		end
-		if $GAME_STATE[:timer] =< 0 
+		if $GAME_STATE[:timer] <= 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
 			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
 				$GAME_STATE[:placedCards] = [] #delete all the previous cards
@@ -192,14 +192,14 @@ EventMachine.run do
 					cardsPlayed.each do |card|
 						tempInventory.delete_at(tempInventory.index(card))
 						$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory.push(rand(0 .. $NUMBER_OF_WHITE_CARDS - 1))
-						$GAME_STATE[:placedCards] << card
+						$GAME_STATE[:placedCards] << {card: card, player: getPlayerIndexFromIP(getSockIP(ws))}
 					end
 					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
 					$players[getPlayerIndexFromIP(getSockIP(ws))].can_place_cards = false
 					ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
 				end
-			when "chooseCard" #called when the card czar chooses
-
+			when "chooseCard" #called when the card chooser chooses
+				if (getPlayerFromIP(getSockIP(ws)).)
 			end
 		end
 

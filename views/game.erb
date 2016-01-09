@@ -48,9 +48,9 @@
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
 				var cardElement = document.createElement("p");
-				cardElement.id = "placed-card-" + cardArray[i];
-				cardElement.name = cardArray[i];
-				cardElement.innerHTML = cardFromId(cardArray[i])["quote"];
+				cardElement.id = "placed-card-" + cardArray[i]["card"];
+				cardElement.name = cardArray[i]["card"];
+				cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"];
 				document.getElementById("cardsInPlay").appendChild(cardElement);
 			}
 		}
