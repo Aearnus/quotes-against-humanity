@@ -35,14 +35,17 @@
 
 		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray) {
+			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
-				cardElement.addEventListener("click", function() 
+				cardElement.addEventListener("click", function(event) 
 																{ 
-																	gameSocket.send(JSON.stringify({type: 'playCard', data: [i]}));
+																	var currentElement = event.target || event.srcElement;
+																	alert(currentElement.getAttribute("name"));
+																	gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
 																});
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
@@ -59,6 +62,7 @@
 				case "gameState": //everything that isn't your inventory
 					displayTimer(message["data"]["timer"]);
 					displayScene(message["data"]["currentScene"]);
+					displayPlacedCards(message["data"]["placedCard"]);
 					break;
 			}
 		}

@@ -55,8 +55,7 @@ $CARDS_IN_A_HAND = 8
 $MAX_TIME = 60
 #--------GAME FUNCTIONS--------
 class Player
-	attr_accessor :card_inventory #list of card IDs
-	attr_accessor :can_place_cards, :points
+	attr_accessor :card_inventory, :can_place_cards, :points 
 	attr_reader :nick, :ip
 	def initialize(nick, ip)
 		@card_inventory = []
@@ -65,7 +64,7 @@ class Player
 		end
 		@nick = nick
 		@ip = ip
-		@can_place_cards = false
+		@can_place_cards = true
 		@points = 0
 	end
 	def serialize()
@@ -147,6 +146,7 @@ EventMachine.run do
 		end
 
 		ws.onmessage do |msg|
+			puts "got #{msg}"
 			message = JSON.parse msg
 			case message["type"]
 			when "playCard" #called once for both single and multiple cards played
