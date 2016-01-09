@@ -56,8 +56,9 @@ end
 
 #--------GAME OPTIONS--------
 $CARDS = File.read("public/cards.json")
-$NUMBER_OF_WHITE_CARDS = 209
-$NUMBER_OF_BLACK_CARDS = 5
+$BLACK_CARDS = File.read("public/blackCards.json")
+$NUMBER_OF_WHITE_CARDS = 367
+$NUMBER_OF_BLACK_CARDS = 6
 $CARDS_IN_A_HAND = 8
 $MAX_TIME = 20
 #--------GAME FUNCTIONS--------
@@ -99,6 +100,8 @@ def updateGame()
 		if $GAME_STATE[:timer] < 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
 			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
+				$GAME_STATE[:placedCards] = [] #delete all the previous cards
+				$GAME_STATE[:blackCard] = rand(0 .. $NUMBER_OF_BLACK_CARDS - 1)
 				$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
 				$players.each do |cP|
 					cP.can_place_cards = true
@@ -109,6 +112,9 @@ def updateGame()
 				end
 			end
 			$GAME_STATE[:timer] = $MAX_TIME
+			$socketClients.each do |ws|
+				ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
+			end
 		end
 		sleep 1
 	end
@@ -152,7 +158,7 @@ EventMachine.run do
 		ws.onopen do |handshake|
 			$socketClients << ws
 			puts getSockIP(ws)
-			ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
+			ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
 			sendGameState()
 		end
 
@@ -166,15 +172,19 @@ EventMachine.run do
 					tempInventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory
 					cardsPlayed.each do |card|
 						tempInventory.delete_at(tempInventory.index(card))
+						$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory.push(rand(0 .. $NUMBER_OF_WHITE_CARDS - 1))
 						$GAME_STATE[:placedCards] << card
 					end
 					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
-					ws.send JSON.generate({type: "inventory", data: getPlayerFromIP(getSockIP(ws)).card_inventory})
+					$players[getPlayerIndexFromIP(getSockIP(ws))].can_place_cards = false
+					ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
 				end
 			end
 		end
 
 		ws.onclose do
+			#$players.delete(getPlayerFromIP(getSockIP(ws)))
+			#$socketClients.delete(ws)
 		end
 	end
 

@@ -15,6 +15,13 @@
 			}
 			return tempCard;
 		}
+		function blackCardFromId(id) {
+			var tempCard = blackCards[id];
+			if (tempCard["id"] != id) {
+				errorDialog("blackCardFromIdMismatch");
+			}
+			return tempCard;
+		}
 
 		//--------RANDOM RENDERING FUNCTIONS--------
 		function displayTimer(time) {
@@ -43,20 +50,27 @@
 				document.getElementById("cardsInPlay").appendChild(cardElement);
 			}
 		}
+		function displayBlackCard(card) {
+			document.getElementById("blackCard").innerHTML = blackCardFromId(card);
+		}
 
 		//--------INVENTORY FUNCTIONS--------
-		function displayInventory(inventoryArray) {
+		function displayInventory(inventoryArray, can_place_cards) {
 			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
-				cardElement.addEventListener("click", function(event) 
-				{ 
-					var currentElement = event.target || event.srcElement;
-					gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
-				});
+				if (can_place_cards) {
+					cardElement.addEventListener("click", function(event) 
+					{ 
+						var currentElement = event.target || event.srcElement;
+						gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
+					});
+				} else {
+					cardElement.style.cssText = "color: grey;";
+				}
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
 		}
@@ -67,13 +81,14 @@
 			var message = JSON.parse(e.data);
 			switch (message["type"]) {
 				case "inventory": //updates client inventory
-					displayInventory(message["data"]);
+					displayInventory(message["data"]["inventory"], message["data"]["can_place_cards"]);
 					break;
 				case "gameState": //everything that isn't your inventory
 					displayTimer(message["data"]["timer"]);
 					displayScene(message["data"]["currentScene"]);
 					displayPlacedCards(message["data"]["placedCards"]);
 					displayPlayers(message["data"]["players"]);
+					displayBlackCard(message["data"]["blackCard"]);
 					break;
 			}
 		}
@@ -95,6 +110,7 @@
 		function init() {
 			sockMe();
 			cards = <%= $CARDS %>
+			blackCards = <%= $BLACK_CARDS %>
 		}
 
 		window.onload = init;

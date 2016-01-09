@@ -28,7 +28,7 @@ Noah
 Noah
 Noah
 Matthew,Noah
-Ashley
+Ashley,Kirsten
 Noah,Nathaniel,Tyler
 Sam,Everyone,Sam
 Kirsten,Tyler
@@ -157,7 +157,7 @@ Matthew
 Matthew
 Matthew,Tyler
 Sam
-Tyler
+Tyler,Mr. Racine
 Mrs. Jewette
 Mrs. Jewette,Noah
 Matthew
@@ -173,7 +173,7 @@ Almost everyone
 Kyle
 Ashley,Nathaniel
 Kirsten
-Mrs. Roa,Noah,Tyler,Willaim,
+Mrs. Roa,Noah,Tyler,William,
 Everyone except Sam
 Everyone...
 Nathaniel
@@ -333,3 +333,35 @@ Noah,Tyler,Kirsten
 Killer Keemstarx
 Noah
 Everyone
+Anthony,Andrew,Tyler,Noah
+William,Duncan
+Kill me.
+Mr. Lang
+Mr. Lang
+Tyler
+Mr. Racine,Noah,Tyler
+Tyler
+Tristan
+Sam
+Jimmy Neutron
+Jimmy Neutron
+Jimmy Neutron
+Jimmy Neutron
+Jimmy Neutron
+Matthew
+Noah,Tyler,Nathaniel
+Tyler
+Everyone,Nathaniel
+Everyone
+Aiden,Noah,Tyler
+Aiden
+Kirsten
+Everyone except Tyler
+Ashley
+Dunkey
+Kill me.
+Tyler
+Anthony,Nathaniel,Tyler
+Papa Franku
+Tyler,The Cheese,Queso
+Tyler,The Cheese,Queso
