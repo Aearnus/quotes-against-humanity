@@ -23,7 +23,18 @@
 		function displayScene(scene) {
 			document.getElementById("sceneCounter").innerHTML = scene;
 		}
+		function displayPlayers(playerList) {
+			document.getElementById("playerList").innerHTML = "";
+			for (var i = 0; i < playerList.length; i++) {
+				var playerElement = document.createElement("p");
+				playerElement.id = "name-" + playerList[i];
+				playerElement.name = playerList[i];
+				playerElement.innerHTML = playerList[i]["nick"];
+				document.getElementById("playerList").appendChild(playerElement);
+			}
+		}
 		function displayPlacedCards(cardArray) {
+			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "placed-card-" + cardArray[i];
@@ -42,11 +53,10 @@
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
 				cardElement.addEventListener("click", function(event) 
-																{ 
-																	var currentElement = event.target || event.srcElement;
-																	alert(currentElement.getAttribute("name"));
-																	gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
-																});
+				{ 
+					var currentElement = event.target || event.srcElement;
+					gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
+				});
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
 		}
@@ -62,7 +72,8 @@
 				case "gameState": //everything that isn't your inventory
 					displayTimer(message["data"]["timer"]);
 					displayScene(message["data"]["currentScene"]);
-					displayPlacedCards(message["data"]["placedCard"]);
+					displayPlacedCards(message["data"]["placedCards"]);
+					displayPlayers(message["data"]["players"]);
 					break;
 			}
 		}
@@ -90,12 +101,14 @@
 		</script>
 	</head>
 	<body>
-		<h1>Timer:</h1>
-		<h2 id="countdownTimer"></h2>
-		<h1>currentScene:</h1>
-		<h2 id="sceneCounter"></h2>
-		<h2>Quotes Against Humanity</h2>
-		<h3>Cards in play:</h3>
+		<h1>Quotes Against Humanity</h1>
+		<h2>Timer:</h2>
+		<h3 id="countdownTimer"></h3>
+		<h2>currentScene:</h2>
+		<h3 id="sceneCounter"></h3>
+		<h2>Players:</h2>
+		<p id="playerList"></p>
+		<h2>Cards in play:</h3>
 		<p id="blackCard" style="background: rgb(255, 255, 255); font-color: rgb(0,0,0);"></p>
 		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>

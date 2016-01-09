@@ -46,13 +46,20 @@ def sendToAll(msg)
 	end
 end
 
+def serializedPlayers()
+	serialArray = []
+	$players.each do |cP|
+		serialArray << cP.makeSafe()
+	end
+	return serialArray
+end
 
 #--------GAME OPTIONS--------
 $CARDS = File.read("public/cards.json")
 $NUMBER_OF_WHITE_CARDS = 209
 $NUMBER_OF_BLACK_CARDS = 5
 $CARDS_IN_A_HAND = 8
-$MAX_TIME = 60
+$MAX_TIME = 20
 #--------GAME FUNCTIONS--------
 class Player
 	attr_accessor :card_inventory, :can_place_cards, :points 
@@ -67,7 +74,8 @@ class Player
 		@can_place_cards = true
 		@points = 0
 	end
-	def serialize()
+	def makeSafe()
+		return {nick: @nick, points: @points}
 	end
 end
 
@@ -76,7 +84,8 @@ end
 #timer = current number of countdown clock
 #placedCards = array of id's of cards that were placed
 #cardChooser = index of the player that's the current cardChooser
-$GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0}
+#players = a list of players w/ sensitive stuff removed
+$GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0, players: serializedPlayers()}
 
 def sendGameState()
 	sendToAll JSON.generate({type: "gameState", data: $GAME_STATE})
@@ -85,14 +94,16 @@ end
 def updateGame() 
 	loop do
 		sendGameState()
+		$GAME_STATE[:players] = serializedPlayers()
 		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
 		if $GAME_STATE[:timer] < 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
-			if $GAME_STATE[:currentScene] == 0
+			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
+				$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
 				$players.each do |cP|
 					cP.can_place_cards = true
 				end
-			elsif $GAME_STATE[:currentScene] == 0
+			elsif $GAME_STATE[:currentScene] == 1 #the card chooser is choosing the best card
 				$players.each do |cP|
 					cP.can_place_cards = false
 				end
