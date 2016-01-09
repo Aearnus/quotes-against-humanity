@@ -94,11 +94,16 @@ end
 #timer = current number of countdown clock
 #placedCards = array of id's of cards that were placed
 #cardChooser = index of the player that's the current cardChooser
+#chosenCard = -1 until a card(s) is chosen, and once a card(s) is chosen, it is the index of that card(s)
 #players = a list of players w/ sensitive stuff removed
-$GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0, players: serializedPlayers()}
+$GAME_STATE = {currentScene: 0, blackCard: rand(0 .. $NUMBER_OF_BLACK_CARDS - 1), timer: $MAX_TIME, placedCards: [], cardChooser: 0, chosenCard: -1, players: serializedPlayers()}
 
 def sendGameState()
 	sendToAll JSON.generate({type: "gameState", data: $GAME_STATE})
+end
+
+def sendInventory(ws, player)
+	ws.send JSON.generate({type: "inventory", data: {inventory: player.card_inventory, can_place_cards: player.can_place_cards, is_card_chooser: player.is_card_chooser}})
 end
 
 def updateGame() 
@@ -113,6 +118,7 @@ def updateGame()
 		if $GAME_STATE[:timer] <= 0 
 			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
 			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
+				$GAME_STATE[:chosenCard] = -1
 				$GAME_STATE[:placedCards] = [] #delete all the previous cards
 				$GAME_STATE[:blackCard] = rand(0 .. $NUMBER_OF_BLACK_CARDS - 1)
 				$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
@@ -132,7 +138,7 @@ def updateGame()
 			end
 			$GAME_STATE[:timer] = $MAX_TIME
 			$socketClients.each do |ws|
-				ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
+				sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
 			end
 		end
 		sleep 1
@@ -175,9 +181,10 @@ EventMachine.run do
 	EventMachine::WebSocket.run(:host => '0.0.0.0', :port => 12975) do |ws| # <-- Added |ws|
 		#when someone connects, they need their inventory and initial game state
 		ws.onopen do |handshake|
+			$socketClients.delete_if {|s| getSockIP(s) == getSockIP(ws)}
 			$socketClients << ws
 			puts getSockIP(ws)
-			ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
+			sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
 			sendGameState()
 		end
 
@@ -196,14 +203,27 @@ EventMachine.run do
 					end
 					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
 					$players[getPlayerIndexFromIP(getSockIP(ws))].can_place_cards = false
-					ws.send JSON.generate({type: "inventory", data: {inventory: getPlayerFromIP(getSockIP(ws)).card_inventory, can_place_cards: getPlayerFromIP(getSockIP(ws)).can_place_cards}})
-				end
+					sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
+					end
 			when "chooseCard" #called when the card chooser chooses
-				if (getPlayerFromIP(getSockIP(ws)).)
+				#if the message is from the card chooser and it is his turn to choose
+				if (getPlayerFromIP(getSockIP(ws)).is_card_chooser == true) && ($GAME_STATE[:currentScene] == 1)
+					$players[getPlayerIndexFromIP(getSockIP(ws))].is_card_chooser = false
+					cardIndexChosen = message["data"]
+					$GAME_STATE[:chosenCard] = cardIndexChosen
+					$GAME_STATE[:timer] = 5
+					#award points to the player who placed the winning card(s)
+					wonCardIndex = $GAME_STATE[:chosenCard]
+					wonCard = $GAME_STATE[:placedCards][wonCardIndex]
+					wonPlayerIndex = wonCard[:player]
+					$players[wonPlayerIndex].points = $players[wonPlayerIndex].points + 1
+					sendGameState()
+				end
 			end
 		end
 
 		ws.onclose do
+			puts $socketClients
 			#$players.delete(getPlayerFromIP(getSockIP(ws)))
 			#$socketClients.delete(ws)
 		end

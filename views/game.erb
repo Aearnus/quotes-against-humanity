@@ -34,29 +34,59 @@
 			document.getElementById("playerList").innerHTML = "";
 			for (var i = 0; i < playerList.length; i++) {
 				var playerElement = document.createElement("p");
-				playerElement.id = "name-" + playerList[i];
-				playerElement.name = playerList[i];
+				playerElement.id = "name-" + playerList[i]["nick"];
+				playerElement.setAttribute("name", playerList[i]["nick"]);
 				if (playerList[i]["is_card_chooser"] == true) {
 					playerElement.innerHTML = playerList[i]["nick"] + " (card chooser)";
 				} else {
 					playerElement.innerHTML = playerList[i]["nick"];
 				}
+				var scoreElement = document.createElement("p");
+				scoreElement.id = "score-" + playerList[i]["nick"];
+				scoreElement.setAttribute("name", playerList[i]["nick"]);
+				scoreElement.innerHTML = "Score: " + playerList[i]["points"];
 				document.getElementById("playerList").appendChild(playerElement);
+				document.getElementById("playerList").appendChild(scoreElement);
 			}
 		}
-		function displayPlacedCards(cardArray) {
+		function displayPlacedCards(cardArray, winningCard, players) {
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "placed-card-" + cardArray[i]["card"];
-				cardElement.name = cardArray[i]["card"];
-				cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"];
+				cardElement.setAttribute("name", i);
+				if (winningCard == -1) {
+					cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"];
+					if (amCardChooser) {
+						cardElement.addEventListener("click", function(event) 
+						{ 
+							var currentElement = event.target || event.srcElement;
+							console.log("sending " + JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
+							gameSocket.send(JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
+						});
+					}
+				} else {
+					cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"] + " -" + players[cardArray[i]["player"]["nick"]];
+					if (i == winningCard) {
+						cardElement.style.background = "rgb(255,255,0)";
+					}
+				}
 				document.getElementById("cardsInPlay").appendChild(cardElement);
 			}
 		}
 		function displayBlackCard(card) {
 			document.getElementById("blackCard").innerHTML = blackCardFromId(card)["quote"];
 		}
+		function displayIsCardChooser(isCardChooser) {
+			if (isCardChooser) {
+				document.getElementById("isCardChooser").style.display = "block"
+				amCardChooser = true;
+			} else {
+				document.getElementById("isCardChooser").style.display = "none"
+				amCardChooser = false;
+			}
+		}
+
 
 		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray, can_place_cards) {
@@ -86,11 +116,12 @@
 			switch (message["type"]) {
 				case "inventory": //updates client inventory
 					displayInventory(message["data"]["inventory"], message["data"]["can_place_cards"]);
+					displayIsCardChooser(message["data"]["is_card_chooser"])
 					break;
 				case "gameState": //everything that isn't your inventory
 					displayTimer(message["data"]["timer"]);
 					displayScene(message["data"]["currentScene"]);
-					displayPlacedCards(message["data"]["placedCards"]);
+					displayPlacedCards(message["data"]["placedCards"], message["data"]["chosenCard"], message["data"]["players"]);
 					displayPlayers(message["data"]["players"], message["data"]["cardChooser"]);
 					displayBlackCard(message["data"]["blackCard"]);
 					break;
@@ -115,6 +146,7 @@
 			sockMe();
 			cards = <%= $CARDS %>
 			blackCards = <%= $BLACK_CARDS %>
+			amCardChooser = false;
 		}
 
 		window.onload = init;
@@ -127,7 +159,8 @@
 		<h3 id="sceneCounter"></h3>
 		<h2>Players:</h2>
 		<p id="playerList"></p>
-		<h2>Cards in play:</h3>
+		<h2>Cards in play:</h2>
+		<h3 id="isCardChooser" style="display:none;background:rgb(200,200,200)">You are the card chooser! Click a card to choose it as the best one.</h3>
 		<p id="blackCard" style="background: rgb(0,0,0); color: rgb(255, 255, 255);"></p>
 		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>
