@@ -56,7 +56,7 @@ $MAX_TIME = 60
 #--------GAME FUNCTIONS--------
 class Player
 	attr_accessor :card_inventory #list of card IDs
-	attr_accessor :can_place_cards
+	attr_accessor :can_place_cards, :points
 	attr_reader :nick, :ip
 	def initialize(nick, ip)
 		@card_inventory = []
@@ -66,6 +66,7 @@ class Player
 		@nick = nick
 		@ip = ip
 		@can_place_cards = false
+		@points = 0
 	end
 	def serialize()
 	end

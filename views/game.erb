@@ -23,6 +23,15 @@
 		function displayScene(scene) {
 			document.getElementById("sceneCounter").innerHTML = scene;
 		}
+		function displayPlacedCards(cardArray) {
+			for (var i = 0; i < cardArray.length; i++) {
+				var cardElement = document.createElement("p");
+				cardElement.id = "placed-card-" + cardArray[i];
+				cardElement.name = cardArray[i];
+				cardElement.innerHTML = cardFromId(cardArray[i])["quote"];
+				document.getElementById("cardsInPlay").appendChild(cardElement);
+			}
+		}
 
 		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray) {
@@ -31,6 +40,7 @@
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.name = inventoryArray[i];
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
+				cardElement.onclick = "gameSocket.send(JSON.stringify({type: 'playCard', data: [" + i + "]}));"
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
 		}
@@ -80,6 +90,7 @@
 		<h2>Quotes Against Humanity</h2>
 		<h3>Cards in play:</h3>
 		<p id="blackCard" style="background: rgb(255, 255, 255); font-color: rgb(0,0,0);"></p>
+		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>
 		<p id="cardInventory"></p>
 	</body>
