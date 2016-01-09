@@ -38,9 +38,12 @@
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "card-" + inventoryArray[i];
-				cardElement.name = inventoryArray[i];
+				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
-				cardElement.onclick = "gameSocket.send(JSON.stringify({type: 'playCard', data: [" + i + "]}));"
+				cardElement.addEventListener("click", function() 
+																{ 
+																	gameSocket.send(JSON.stringify({type: 'playCard', data: [i]}));
+																});
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
 		}
