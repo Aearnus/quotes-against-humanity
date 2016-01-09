@@ -66,6 +66,7 @@
 						});
 					}
 				} else {
+					console.log(players);
 					cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"] + " -" + players[cardArray[i]["player"]["nick"]];
 					if (i == winningCard) {
 						cardElement.style.background = "rgb(255,255,0)";

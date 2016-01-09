@@ -65,8 +65,8 @@ end
 #--------GAME OPTIONS--------
 $CARDS = File.read("public/cards.json")
 $BLACK_CARDS = File.read("public/blackCards.json")
-$NUMBER_OF_WHITE_CARDS = 367
-$NUMBER_OF_BLACK_CARDS = 6
+$NUMBER_OF_WHITE_CARDS = 374
+$NUMBER_OF_BLACK_CARDS = 18
 $CARDS_IN_A_HAND = 12
 $MAX_TIME = 25
 #--------GAME FUNCTIONS--------
@@ -181,7 +181,7 @@ EventMachine.run do
 	EventMachine::WebSocket.run(:host => '0.0.0.0', :port => 12975) do |ws| # <-- Added |ws|
 		#when someone connects, they need their inventory and initial game state
 		ws.onopen do |handshake|
-			$socketClients.delete_if {|s| getSockIP(s) == getSockIP(ws)}
+			$socketClients.delete_if {|s| s.error?}
 			$socketClients << ws
 			puts getSockIP(ws)
 			sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
@@ -223,7 +223,9 @@ EventMachine.run do
 		end
 
 		ws.onclose do
-			puts $socketClients
+			puts "closed, but #{$socketClients}"
+			$socketClients.delete_if {|s| s.error?}
+			puts "deleted, but #{$socketClients}"
 			#$players.delete(getPlayerFromIP(getSockIP(ws)))
 			#$socketClients.delete(ws)
 		end
