@@ -68,7 +68,7 @@ $BLACK_CARDS = File.read("public/blackCards.json")
 $NUMBER_OF_WHITE_CARDS = 377
 $NUMBER_OF_BLACK_CARDS = 23
 $CARDS_IN_A_HAND = 12
-$MAX_TIME = 25
+$MAX_TIME = 40
 #--------GAME FUNCTIONS--------
 class Player
 	attr_accessor :card_inventory, :can_place_cards, :points, :is_card_chooser
@@ -108,6 +108,7 @@ end
 
 def updateGame() 
 	loop do
+		puts "running loop"
 		sendGameState()
 		$GAME_STATE[:players] = serializedPlayers()
 		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1

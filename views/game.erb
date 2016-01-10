@@ -54,16 +54,13 @@
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
 				var cardHolder = document.createElement("p")
-				cardHolder.style.border = "2px solid black";
+				cardHolder.className = "card";
 				cardHolder.setAttribute("name", i);
 				if (winningCard == -1) {
 					if (amCardChooser) {
 						cardHolder.addEventListener("click", function(event) 
 							{ 
-								var currentElement = this; //FIXME NOT SELECTING THE CORRECT ELEMENT
-								console.log("currentElement is " + currentElement);
-								console.log("currentElement.parent is " + currentElement.parentNode);
-								console.log("currentElement.name is " + currentElement.getAttribute("name"));
+								var currentElement = this;
 								console.log("sending " + JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
 								gameSocket.send(JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
 							});
@@ -112,25 +109,32 @@
 			var howManyCards = blackCardFromId(currentBlackCard)["cardAmount"];
 			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
-				var cardElement = document.createElement("p");
+				var cardElement = document.createElement("div");
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
-				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
+				cardElement.className = "card";
+				var cardQuote = document.createElement("div");
+				cardQuote.innerHTML = cardFromId(inventoryArray[i])["quote"];
+				cardQuote.className = "cardQuote";
+				cardElement.appendChild(cardQuote);
 				if (canPlaceCards) {
+					console.log("this black card wants " + howManyCards);
 					if (howManyCards == 1) {
+						console.log("and its getting one, what a bitch");
 						cardElement.addEventListener("click", function(event) 
 						{ 
-							var currentElement = event.target;
+							var currentElement = this;
 							gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
 						});
 					} else if (howManyCards > 1) {
+						console.log("and its getting more than one");
 						currentSelectedCards = [];
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = event.target;
 							if (selected.indexOf(currentElement) == -1) {
 								selected.push(currentElement);
-								currentElement.style.background = "rgb(50,50,255)";
+								currentElement.className += " selectedCard";
 								currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
 								if (currentSelectedCards.length == howManyCards) {
 									gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
@@ -206,7 +210,6 @@
 		<h3>Your cards:
 			<p id="placeNCards" style="display:none;">Place down 2 cards.</p>
 		</h3>
-		
 		<p id="cardInventory"></p>
 	</body>
 </html>
