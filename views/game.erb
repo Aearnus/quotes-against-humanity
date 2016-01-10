@@ -108,10 +108,19 @@
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.className = "card";
+				if (selectedCardIndexes.indexOf(i) != -1) {
+					cardElement.className += " selectedCard";
+				}
 				var cardQuote = document.createElement("div");
 				cardQuote.innerHTML = cardFromId(inventoryArray[i])["quote"];
 				cardQuote.className = "cardQuote";
 				cardElement.appendChild(cardQuote);
+				var cardAuthor = document.createElement("div");
+				for (var authorI = 0; authorI < cardFromId(inventoryArray[i])["authors"].length; authorI++) {
+					cardAuthor.innerHTML += cardFromId(inventoryArray[i])["authors"][authorI] + "<br>";
+				}
+				cardAuthor.className = "cardAuthor";
+				cardElement.appendChild(cardAuthor);
 				if (canPlaceCards) {
 					console.log("this black card wants " + howManyCards);
 					if (howManyCards == 1) {
@@ -129,18 +138,22 @@
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = this;
-							if (selected.indexOf(currentElement.getAttribute("name")) == -1) {
-								selected.push(currentElement.getAttribute("name"));
-								currentElement.className += " selectedCard";
+							if (selected.indexOf(Number.parseInt(currentElement.getAttribute("name"))) == -1) {
+								selected.push(Number.parseInt(currentElement.getAttribute("name")));
+								selectedCardIndexes.push(i);
+								currentElement.className += " ";
 								if (selected.length == howManyCards) {
 									gameSocket.send(JSON.stringify({type: 'playCard', data: selected}));
 									selected = [];
+									selectedCardIndexes = [];
 								}
 							}
 						});
 					}
 				} else {
 					cardElement.style.cssText = "color: grey;";
+					selected = [];
+					selectedCardIndexes = [];
 				}
 				document.getElementById("cardInventory").appendChild(cardElement);
 			}
@@ -187,6 +200,7 @@
 			amCardChooser = false;
 			currentBlackCard = 0;
 			selected = [];
+			selectedCardIndexes = [];
 		}
 
 		window.onload = init;

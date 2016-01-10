@@ -34,7 +34,20 @@ h1 {
 .cardQuote {
 	position: absolute;
 	display: block;
-	top: 10px;
+	top: 0px;
+	left: 0px;
+	padding-top: 5px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+.cardAuthor {
+	position: absolute;
+	display: block;
+	bottom: 0px;
+	right: 0px;
+	padding-bottom: 5px;
+	padding-right: 5px;
 }
 
 .playerContainer {
