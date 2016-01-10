@@ -56,7 +56,7 @@
 		function displayPlacedCards(cardArray, winningCard, players) {
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
-				var cardHolder = document.createElement("p")
+				var cardHolder = document.createElement("div");
 				cardHolder.className = "card";
 				cardHolder.setAttribute("name", i);
 				if (winningCard == -1) {
@@ -75,13 +75,16 @@
 					}
 				}
 				for (var j = 0; j < cardArray[i]["card"].length; j++) {
-					currentCard = cardArray[i]["card"][j];
-					var cardElement = document.createElement("p");
-					cardElement.id = "placed-card-" + currentCard;
-					cardElement.innerHTML = cardFromId(currentCard)["quote"];
-					cardHolder.setAttribute("name", i);
-					cardHolder.appendChild(cardElement);
+					var currentCard = cardArray[i]["card"][j];
+					currentCard.className = "card";
+					var cardQuote = document.createElement("div");
+					cardQuote.id = "placed-card-" + currentCard;
+					cardQuote.innerHTML = cardFromId(currentCard)["quote"];
+					cardQuote.className = "cardQuote";
+					currentCard.appendChild(cardQuote);
+					cardHolder.appendChild(currentCard);
 				}
+
 				document.getElementById("cardsInPlay").appendChild(cardHolder);
 			}
 		}
