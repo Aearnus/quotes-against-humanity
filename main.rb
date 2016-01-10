@@ -213,7 +213,7 @@ EventMachine.run do
 					$GAME_STATE[:chosenCard] = cardIndexChosen
 					$GAME_STATE[:timer] = 5
 					#award points to the player who placed the winning card(s)
-					wonCardIndex = $GAME_STATE[:chosenCard]
+					wonCardsIndex = $GAME_STATE[:chosenCard]
 					wonCard = $GAME_STATE[:placedCards][wonCardIndex]
 					wonPlayerIndex = wonCard[:player]
 					$players[wonPlayerIndex].points = $players[wonPlayerIndex].points + 1
