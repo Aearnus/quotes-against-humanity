@@ -50,7 +50,9 @@ end
 
 def sendToAll(msg)
 	$socketClients.each do |socket|
-		socket.send msg
+		if (!socket.error?) 
+			socket.send msg
+		end
 	end
 end
 
@@ -108,7 +110,6 @@ end
 
 def updateGame() 
 	loop do
-		puts "running loop"
 		sendGameState()
 		$GAME_STATE[:players] = serializedPlayers()
 		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
@@ -138,13 +139,17 @@ def updateGame()
 				end
 			end
 			$GAME_STATE[:timer] = $MAX_TIME
-			$socketClients.each do |ws|
+		end
+		#once black card and everything is chosen, resend inventory
+		$socketClients.each do |ws|
+			if (!ws.error?)
 				sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
 			end
 		end
 		sleep 1
 	end
 end
+Thread.abort_on_exception = true
 Thread.new do
 	puts "opened game update thread"
 	updateGame()

@@ -34,6 +34,8 @@
 		function displayPlayers(playerList, cardChooser) {
 			document.getElementById("playerList").innerHTML = "";
 			for (var i = 0; i < playerList.length; i++) {
+				var playerContainer = document.createElement("div");
+				playerContainer.className = "playerContainer";
 				var playerElement = document.createElement("p");
 				playerElement.id = "name-" + playerList[i]["nick"];
 				playerElement.setAttribute("name", playerList[i]["nick"]);
@@ -42,12 +44,13 @@
 				} else {
 					playerElement.innerHTML = playerList[i]["nick"];
 				}
+				playerContainer.appendChild(playerElement);
 				var scoreElement = document.createElement("p");
 				scoreElement.id = "score-" + playerList[i]["nick"];
 				scoreElement.setAttribute("name", playerList[i]["nick"]);
 				scoreElement.innerHTML = "Score: " + playerList[i]["points"];
-				document.getElementById("playerList").appendChild(playerElement);
-				document.getElementById("playerList").appendChild(scoreElement);
+				playerContainer.appendChild(scoreElement)
+				document.getElementById("playerList").appendChild(playerContainer);
 			}
 		}
 		function displayPlacedCards(cardArray, winningCard, players) {
@@ -83,15 +86,7 @@
 			}
 		}
 		function displayBlackCard(card) {
-			currentBlackCard = card;
 			document.getElementById("blackCard").innerHTML = blackCardFromId(card)["quote"];
-			var howManyCards = blackCardFromId(currentBlackCard)["cardAmount"];
-			if (howManyCards > 1) {
-				document.getElementById("placeNCards").style.display = "block";
-				document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
-			} else {
-				document.getElementById("placeNCards").style.display = "none";
-			}
 		}
 		function displayIsCardChooser(isCardChooser) {
 			if (isCardChooser) {
@@ -121,6 +116,7 @@
 					console.log("this black card wants " + howManyCards);
 					if (howManyCards == 1) {
 						console.log("and its getting one, what a bitch");
+						document.getElementById("placeNCards").style.display = "none";
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = this;
@@ -128,6 +124,8 @@
 						});
 					} else if (howManyCards > 1) {
 						console.log("and its getting more than one");
+						document.getElementById("placeNCards").style.display = "block";
+						document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
 						currentSelectedCards = [];
 						cardElement.addEventListener("click", function(event) 
 						{ 
@@ -164,6 +162,7 @@
 					displayScene(message["data"]["currentScene"]);
 					displayPlacedCards(message["data"]["placedCards"], message["data"]["chosenCard"], message["data"]["players"]);
 					displayPlayers(message["data"]["players"], message["data"]["cardChooser"]);
+					currentBlackCard = message["data"]["blackCard"];
 					displayBlackCard(message["data"]["blackCard"]);
 					break;
 			}

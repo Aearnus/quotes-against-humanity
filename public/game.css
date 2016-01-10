@@ -20,14 +20,23 @@ h1 {
 }
 
 .card {
+	position: relative;
 	display: inline-block;
 	width: 150px;
 	height: 150px;
 	border: 2px solid black;
 }
 
+.selectedCard {
+	background: rgb(60, 60, 255);
+}
+
 .cardQuote {
-	position: relative;
+	position: absolute;
 	display: block;
-	top: 20px;
+	top: 10px;
+}
+
+.playerContainer {
+	display: inline;
 }
