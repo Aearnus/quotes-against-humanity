@@ -38,5 +38,5 @@ h1 {
 }
 
 .playerContainer {
-	display: inline;
+	display: inline-block;
 }

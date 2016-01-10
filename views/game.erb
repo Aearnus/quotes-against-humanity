@@ -34,9 +34,9 @@
 		function displayPlayers(playerList, cardChooser) {
 			document.getElementById("playerList").innerHTML = "";
 			for (var i = 0; i < playerList.length; i++) {
-				var playerContainer = document.createElement("div");
+				var playerContainer = document.createElement("span");
 				playerContainer.className = "playerContainer";
-				var playerElement = document.createElement("p");
+				var playerElement = document.createElement("div");
 				playerElement.id = "name-" + playerList[i]["nick"];
 				playerElement.setAttribute("name", playerList[i]["nick"]);
 				if (playerList[i]["is_card_chooser"] == true) {
@@ -45,7 +45,7 @@
 					playerElement.innerHTML = playerList[i]["nick"];
 				}
 				playerContainer.appendChild(playerElement);
-				var scoreElement = document.createElement("p");
+				var scoreElement = document.createElement("div");
 				scoreElement.id = "score-" + playerList[i]["nick"];
 				scoreElement.setAttribute("name", playerList[i]["nick"]);
 				scoreElement.innerHTML = "Score: " + playerList[i]["points"];
@@ -129,7 +129,7 @@
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = this;
-							if (selected.indexOf(currentElement).getAttribute("name") == -1) {
+							if (selected.indexOf(currentElement.getAttribute("name")) == -1) {
 								selected.push(currentElement.getAttribute("name"));
 								currentElement.className += " selectedCard";
 								if (selected.length == howManyCards) {
