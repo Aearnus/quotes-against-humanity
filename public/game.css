@@ -1,0 +1,20 @@
+* {
+	font-family: sans-serif;
+}
+
+h1 {
+	text-align: center;
+}
+
+.timerNumber {
+	text-align: center;
+	padding: 0 0 0 0;
+	margin: 0 0 0 0;
+	font-size: 6em;
+}
+
+.timer {
+	text-align: center;
+	padding: 0 0 0 0;
+	margin: 0 0 0 0;
+}

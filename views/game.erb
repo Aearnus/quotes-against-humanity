@@ -3,6 +3,7 @@
 		<title>
 			Quotes Against Humanity
 		</title>
+		<link rel="stylesheet" type="text/css" href="game.css">
 		<script type="text/javascript">
 		//--------HELPER FUNCTIONS--------
 		function errorDialog(problem) {
@@ -52,30 +53,35 @@
 		function displayPlacedCards(cardArray, winningCard, players) {
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
-				var cardElement = document.createElement("p");
-				cardElement.id = "placed-card-" + cardArray[i]["card"];
-				cardElement.setAttribute("name", i);
+				var cardHolder = document.createElement("p")
+				cardHolder.style.border = "2px solid black";
+				cardHolder.setAttribute("name", i);
 				if (winningCard == -1) {
-					cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"];
 					if (amCardChooser) {
-						cardElement.addEventListener("click", function(event) 
-						{ 
-							var currentElement = event.target || event.srcElement;
-							console.log("sending " + JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
-							gameSocket.send(JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
-						});
+						cardHolder.addEventListener("click", function(event) 
+							{ 
+								var currentElement = event.target || event.srcElement;
+								console.log("sending " + JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
+								gameSocket.send(JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
+							});
+					} else {
+						cardHolder.innerHTML = cardHolder.innerHTML + " -" + players[cardArray[i]["player"]]["nick"];
+						if (i == winningCard) {
+							cardHolder.style.background = "rgb(255,255,0)";
+						}
 					}
-				} else {
-					console.log(players);
-					cardElement.innerHTML = cardFromId(cardArray[i]["card"])["quote"] + " -" + players[cardArray[i]["player"]["nick"]];
-					if (i == winningCard) {
-						cardElement.style.background = "rgb(255,255,0)";
-					}
+				for (var j = 0; j < cardArray[i]["card"].length; j++) {
+					currentCard = cardArray[i]["card"][j];
+					var cardElement = document.createElement("p");
+					cardElement.id = "placed-card-" + currentCard;
+					cardElement.innerHTML = cardFromId(currentCard)["quote"];
+					cardHolder.appendChild(cardElement);
 				}
-				document.getElementById("cardsInPlay").appendChild(cardElement);
+				document.getElementById("cardsInPlay").appendChild(cardHolder);
 			}
 		}
 		function displayBlackCard(card) {
+			currentBlackCard = card;
 			document.getElementById("blackCard").innerHTML = blackCardFromId(card)["quote"];
 		}
 		function displayIsCardChooser(isCardChooser) {
@@ -90,19 +96,32 @@
 
 
 		//--------INVENTORY FUNCTIONS--------
-		function displayInventory(inventoryArray, can_place_cards) {
+		function displayInventory(inventoryArray, canPlaceCards) {
+			var howManyCards = blackCardFromId(card)["cardAmount"];
 			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.innerHTML = cardFromId(inventoryArray[i])["quote"];
-				if (can_place_cards) {
-					cardElement.addEventListener("click", function(event) 
-					{ 
-						var currentElement = event.target || event.srcElement;
-						gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
-					});
+				if (canPlaceCards) {
+					if (howManyCards == 1) {
+						cardElement.addEventListener("click", function(event) 
+						{ 
+							var currentElement = event.target || event.srcElement;
+							gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
+						});
+					} else if (howManyCards > 1) {
+						currentSelectedCards = [];
+						cardElement.addEventListener("click", function(event) 
+						{ 
+							var currentElement = event.target || event.srcElement;
+							currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
+							if (currentSelectedCards.length == howManyCards) {
+								gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
+							}
+						});
+					}
 				} else {
 					cardElement.style.cssText = "color: grey;";
 				}
@@ -148,6 +167,7 @@
 			cards = <%= $CARDS %>
 			blackCards = <%= $BLACK_CARDS %>
 			amCardChooser = false;
+			currentBlackCard = 0;
 		}
 
 		window.onload = init;
@@ -155,8 +175,9 @@
 	</head>
 	<body>
 		<h1>Quotes Against Humanity</h1>
-		<h2>Timer:</h2>
-		<h3 id="countdownTimer"></h3>
+		<p class="timer">Countdown timer:
+			<p id="countdownTimer" class="timerNumber"></p>
+		</p>
 		<h3 id="sceneCounter"></h3>
 		<h2>Players:</h2>
 		<p id="playerList"></p>
@@ -165,6 +186,9 @@
 		<p id="blackCard" style="background: rgb(0,0,0); color: rgb(255, 255, 255);"></p>
 		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>
+		<p id="placeNCards">
+			Place down 2 cards.
+		</p>
 		<p id="cardInventory"></p>
 	</body>
 </html>

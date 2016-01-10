@@ -199,8 +199,8 @@ EventMachine.run do
 					cardsPlayed.each do |card|
 						tempInventory.delete_at(tempInventory.index(card))
 						$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = $players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory.push(rand(0 .. $NUMBER_OF_WHITE_CARDS - 1))
-						$GAME_STATE[:placedCards] << {card: card, player: getPlayerIndexFromIP(getSockIP(ws))}
 					end
+					$GAME_STATE[:placedCards] << {card: cardsPlayed, player: getPlayerIndexFromIP(getSockIP(ws))}
 					$players[getPlayerIndexFromIP(getSockIP(ws))].card_inventory = tempInventory
 					$players[getPlayerIndexFromIP(getSockIP(ws))].can_place_cards = false
 					sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
