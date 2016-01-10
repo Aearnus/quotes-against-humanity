@@ -60,7 +60,10 @@
 					if (amCardChooser) {
 						cardHolder.addEventListener("click", function(event) 
 							{ 
-								var currentElement = event.target || event.srcElement;
+								var currentElement = this; //FIXME NOT SELECTING THE CORRECT ELEMENT
+								console.log("currentElement is " + currentElement);
+								console.log("currentElement.parent is " + currentElement.parentNode);
+								console.log("currentElement.name is " + currentElement.getAttribute("name"));
 								console.log("sending " + JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
 								gameSocket.send(JSON.stringify({type: "chooseCard", data: Number.parseInt(currentElement.getAttribute("name"))}));
 							});
@@ -85,6 +88,13 @@
 		function displayBlackCard(card) {
 			currentBlackCard = card;
 			document.getElementById("blackCard").innerHTML = blackCardFromId(card)["quote"];
+			var howManyCards = blackCardFromId(currentBlackCard)["cardAmount"];
+			if (howManyCards > 1) {
+				document.getElementById("placeNCards").style.display = "block";
+				document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
+			} else {
+				document.getElementById("placeNCards").style.display = "none";
+			}
 		}
 		function displayIsCardChooser(isCardChooser) {
 			if (isCardChooser) {
@@ -100,12 +110,6 @@
 		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray, canPlaceCards) {
 			var howManyCards = blackCardFromId(currentBlackCard)["cardAmount"];
-			if (howManyCards > 1) {
-				document.getElementById("placeNCards").style.display = "block";
-				document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
-			} else {
-				document.getElementById("placeNCards").style.display = "none";
-			}
 			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
@@ -116,18 +120,22 @@
 					if (howManyCards == 1) {
 						cardElement.addEventListener("click", function(event) 
 						{ 
-							var currentElement = event.target || event.srcElement;
+							var currentElement = event.target;
 							gameSocket.send(JSON.stringify({type: 'playCard', data: [Number.parseInt(currentElement.getAttribute("name"))]}));
 						});
 					} else if (howManyCards > 1) {
 						currentSelectedCards = [];
 						cardElement.addEventListener("click", function(event) 
 						{ 
-							var currentElement = event.target || event.srcElement;
-							currentElement.style.background = "rgb(50,50,255)";
-							currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
-							if (currentSelectedCards.length == howManyCards) {
-								gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
+							var currentElement = event.target;
+							if (selected.indexOf(currentElement) == -1) {
+								selected.push(currentElement);
+								currentElement.style.background = "rgb(50,50,255)";
+								currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
+								if (currentSelectedCards.length == howManyCards) {
+									gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
+									selected = [];
+								}
 							}
 						});
 					}
@@ -177,6 +185,7 @@
 			blackCards = <%= $BLACK_CARDS %>
 			amCardChooser = false;
 			currentBlackCard = 0;
+			selected = [];
 		}
 
 		window.onload = init;

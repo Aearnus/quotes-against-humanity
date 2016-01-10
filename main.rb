@@ -213,9 +213,10 @@ EventMachine.run do
 					$GAME_STATE[:chosenCard] = cardIndexChosen
 					$GAME_STATE[:timer] = 5
 					#award points to the player who placed the winning card(s)
+					puts $GAME_STATE
 					wonCardsIndex = $GAME_STATE[:chosenCard]
-					wonCard = $GAME_STATE[:placedCards][wonCardIndex]
-					wonPlayerIndex = wonCard[:player]
+					wonCards = $GAME_STATE[:placedCards][wonCardsIndex]
+					wonPlayerIndex = wonCards[:player]
 					$players[wonPlayerIndex].points = $players[wonPlayerIndex].points + 1
 					sendGameState()
 				end
@@ -223,9 +224,9 @@ EventMachine.run do
 		end
 
 		ws.onclose do
-			puts "closed, but #{$socketClients}"
+			puts "closed socket"
 			$socketClients.delete_if {|s| s.error?}
-			puts "deleted, but #{$socketClients}"
+			puts "deleted socket"
 			#$players.delete(getPlayerFromIP(getSockIP(ws)))
 			#$socketClients.delete(ws)
 		end
