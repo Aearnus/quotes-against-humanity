@@ -70,6 +70,7 @@
 							cardHolder.style.background = "rgb(255,255,0)";
 						}
 					}
+				}
 				for (var j = 0; j < cardArray[i]["card"].length; j++) {
 					currentCard = cardArray[i]["card"][j];
 					var cardElement = document.createElement("p");
@@ -86,10 +87,10 @@
 		}
 		function displayIsCardChooser(isCardChooser) {
 			if (isCardChooser) {
-				document.getElementById("isCardChooser").style.display = "block"
+				document.getElementById("isCardChooser").style.display = "block";
 				amCardChooser = true;
 			} else {
-				document.getElementById("isCardChooser").style.display = "none"
+				document.getElementById("isCardChooser").style.display = "none";
 				amCardChooser = false;
 			}
 		}
@@ -97,7 +98,13 @@
 
 		//--------INVENTORY FUNCTIONS--------
 		function displayInventory(inventoryArray, canPlaceCards) {
-			var howManyCards = blackCardFromId(card)["cardAmount"];
+			var howManyCards = blackCardFromId(currentBlackCard)["cardAmount"];
+			if (howManyCards > 1) {
+				document.getElementById("placeNCards").style.display = "block";
+				document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
+			} else {
+				document.getElementById("placeNCards").style.display = "none";
+			}
 			document.getElementById("cardInventory").innerHTML = "";
 			for (var i = 0; i < inventoryArray.length; i++) {
 				var cardElement = document.createElement("p");
@@ -116,6 +123,7 @@
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = event.target || event.srcElement;
+							currentElement.style.background = "rgb(50,50,255)";
 							currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
 							if (currentSelectedCards.length == howManyCards) {
 								gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
@@ -186,9 +194,7 @@
 		<p id="blackCard" style="background: rgb(0,0,0); color: rgb(255, 255, 255);"></p>
 		<p id="cardsInPlay"></p>
 		<h3>Your cards:</h3>
-		<p id="placeNCards">
-			Place down 2 cards.
-		</p>
+		<p id="placeNCards" style="display:none;">Place down 2 cards.</p>
 		<p id="cardInventory"></p>
 	</body>
 </html>
