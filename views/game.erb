@@ -116,7 +116,7 @@
 					console.log("this black card wants " + howManyCards);
 					if (howManyCards == 1) {
 						console.log("and its getting one, what a bitch");
-						document.getElementById("placeNCards").style.display = "none";
+						document.getElementById("placeNCards").style.cssText = "display:none;";
 						cardElement.addEventListener("click", function(event) 
 						{ 
 							var currentElement = this;
@@ -124,18 +124,16 @@
 						});
 					} else if (howManyCards > 1) {
 						console.log("and its getting more than one");
-						document.getElementById("placeNCards").style.display = "block";
+						document.getElementById("placeNCards").style.cssText = "display:block;";
 						document.getElementById("placeNCards").innerHTML = "Place down " + howManyCards + " cards.";
-						currentSelectedCards = [];
 						cardElement.addEventListener("click", function(event) 
 						{ 
-							var currentElement = event.target;
-							if (selected.indexOf(currentElement) == -1) {
-								selected.push(currentElement);
+							var currentElement = this;
+							if (selected.indexOf(currentElement).getAttribute("name") == -1) {
+								selected.push(currentElement.getAttribute("name"));
 								currentElement.className += " selectedCard";
-								currentSelectedCards.push(Number.parseInt(currentElement.getAttribute("name")));
-								if (currentSelectedCards.length == howManyCards) {
-									gameSocket.send(JSON.stringify({type: 'playCard', data: currentSelectedCards}));
+								if (selected.length == howManyCards) {
+									gameSocket.send(JSON.stringify({type: 'playCard', data: selected}));
 									selected = [];
 								}
 							}
