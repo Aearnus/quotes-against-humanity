@@ -12,6 +12,6 @@ blackCards = File.open("blackCards.txt", "r:UTF-8", &:read).split("\n").map(&:rs
 blackCardAmounts = File.open("blackCardAmounts.txt", "r:UTF-8", &:read).split("\n").map{|s|s.to_i}
 blackCardObject = []
 blackCards.each_with_index do |quote, index|
-	blackCardObject << {id: index, quote: quote, cardAmount: blackCardAmounts}
+	blackCardObject << {id: index, quote: quote, cardAmount: blackCardAmounts[index]}
 end
 File.write("blackCards.json", JSON.generate(blackCardObject));
