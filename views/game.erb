@@ -69,7 +69,9 @@
 							});
 					} 
 				} else {
-					cardHolder.innerHTML = cardHolder.innerHTML + " -" + players[cardArray[i]["player"]]["nick"];
+					var cardPlacer = document.createElement("div");
+					cardPlacer.innerHTML = " -" + players[cardArray[i]["player"]]["nick"];
+					cardHolder.appendChild(cardPlacer);
 					if (i == winningCard) {
 						cardHolder.style.background = "rgb(255,255,0)";
 					}
@@ -220,8 +222,8 @@
 		<p id="playerList"></p>
 		<h2>Cards in play:</h2>
 		<h3 id="isCardChooser" style="display:none;background:rgb(200,200,200)">You are the card chooser! Click a card to choose it as the best one.</h3>
-		<p id="blackCard" style="background: rgb(0,0,0); color: rgb(255, 255, 255);"></p>
-		<p id="cardsInPlay"></p>
+		<p id="blackCard" class="blackCard"></p>
+		<div id="cardsInPlay"></div>
 		<h3>Your cards:
 			<p id="placeNCards" style="display:none;">Place down 2 cards.</p>
 		</h3>
