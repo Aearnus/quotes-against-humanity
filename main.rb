@@ -25,6 +25,7 @@ def getPlayerIndexFromIP(ip)
 			return index
 		end
 	end
+	return nil
 end
 
 def getPlayerFromIP(ip)
@@ -33,10 +34,15 @@ def getPlayerFromIP(ip)
 			return cP
 		end
 	end
+	return nil
 end
 
 def getSockIP(sock)
-	port, ip = Socket.unpack_sockaddr_in(sock.get_peername)
+	begin
+		port, ip = Socket.unpack_sockaddr_in(sock.get_peername)
+	rescue
+		return nil
+	end
 	return ip
 end
 
@@ -46,6 +52,7 @@ def getSockFromIP(ip)
 			return ws
 		end
 	end
+	return nil
 end
 
 def sendToAll(msg)
@@ -235,11 +242,11 @@ EventMachine.run do
 			puts "closed socket"
 			$socketClients.delete_if {|s| s.error?}
 			puts "deleted socket"
-			$players.each_with_index do |cP, index|
-				if getSockFromIP(cP.ip) == nil
-					$players.delete_at(index)
-				end
-			end
+			#$players.each_with_index do |cP, index|
+			#	if getSockFromIP(cP.ip) == nil
+			#		$players.delete_at(index)
+			#	end
+			#end
 			#$players.delete(getPlayerFromIP(getSockIP(ws)))
 			#$socketClients.delete(ws)
 		end
