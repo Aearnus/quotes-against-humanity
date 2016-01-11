@@ -75,5 +75,5 @@ h1 {
 #cardsInPlay {
 	position: relative;
 	display: inline-block;
-	height: 150px;
+	min-height: 160px;
 }

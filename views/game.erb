@@ -80,6 +80,12 @@
 					var currentCard = cardArray[i]["card"][j];
 					var currentCardHolder = document.createElement("div");
 					currentCardHolder.className = "card";
+					var cardAuthor = document.createElement("div");
+					for (var authorI = 0; authorI < cardFromId(currentCard)["authors"].length; authorI++) {
+						cardAuthor.innerHTML += cardFromId(currentCard)["authors"][authorI] + "<br>";
+					}
+					cardAuthor.className = "cardAuthor";
+					currentCardHolder.appendChild(cardAuthor);
 					var cardQuote = document.createElement("div");
 					cardQuote.id = "placed-card-" + currentCard;
 					cardQuote.innerHTML = cardFromId(currentCard)["quote"];
@@ -114,6 +120,7 @@
 				cardElement.id = "card-" + inventoryArray[i];
 				cardElement.setAttribute("name", inventoryArray[i]);
 				cardElement.className = "card";
+				console.log("selectedCardIndexes: " + selectedCardIndexes);
 				if (selectedCardIndexes.indexOf(i) != -1) {
 					cardElement.className += " selectedCard";
 				}
@@ -147,7 +154,7 @@
 							if (selected.indexOf(Number.parseInt(currentElement.getAttribute("name"))) == -1) {
 								selected.push(Number.parseInt(currentElement.getAttribute("name")));
 								selectedCardIndexes.push(i);
-								currentElement.className += " ";
+								currentElement.className += " selectedCard";
 								if (selected.length == howManyCards) {
 									gameSocket.send(JSON.stringify({type: 'playCard', data: selected}));
 									selected = [];
