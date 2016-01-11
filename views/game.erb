@@ -57,7 +57,7 @@
 			document.getElementById("cardsInPlay").innerHTML = "";
 			for (var i = 0; i < cardArray.length; i++) {
 				var cardHolder = document.createElement("div");
-				cardHolder.className = "card";
+				cardHolder.className = "cardGroup";
 				cardHolder.setAttribute("name", i);
 				if (winningCard == -1) {
 					if (amCardChooser) {
@@ -76,13 +76,14 @@
 				}
 				for (var j = 0; j < cardArray[i]["card"].length; j++) {
 					var currentCard = cardArray[i]["card"][j];
-					currentCard.className = "card";
+					var currentCardHolder = document.createElement("div");
+					currentCardHolder.className = "card";
 					var cardQuote = document.createElement("div");
 					cardQuote.id = "placed-card-" + currentCard;
 					cardQuote.innerHTML = cardFromId(currentCard)["quote"];
 					cardQuote.className = "cardQuote";
-					currentCard.appendChild(cardQuote);
-					cardHolder.appendChild(currentCard);
+					currentCardHolder.appendChild(cardQuote);
+					cardHolder.appendChild(currentCardHolder);
 				}
 
 				document.getElementById("cardsInPlay").appendChild(cardHolder);

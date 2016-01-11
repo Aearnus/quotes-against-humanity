@@ -27,6 +27,12 @@ h1 {
 	border: 2px solid black;
 }
 
+.cardGroup {
+	position: relative;
+	display: inline-block;
+	border: 2px solid black;
+}
+
 .selectedCard {
 	background: rgb(60, 60, 255);
 }
