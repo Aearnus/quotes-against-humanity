@@ -172,7 +172,9 @@ EventMachine.run do
 
 		post "/setUpPlayer" do
 			puts "making new player w/ nick #{params["nick"]} and ip #{request.ip}"
-			$players << Player.new(params["nick"], request.ip)
+			if !playerExistWithIP(request.ip)
+				$players << Player.new(params["nick"], request.ip)
+			end
 			redirect to("/")
 		end
 
@@ -233,6 +235,11 @@ EventMachine.run do
 			puts "closed socket"
 			$socketClients.delete_if {|s| s.error?}
 			puts "deleted socket"
+			$players.each_with_index do |cP, index|
+				if getSockFromIP(cp.ip) == nil
+					$players.delete_at(index)
+				end
+			end
 			#$players.delete(getPlayerFromIP(getSockIP(ws)))
 			#$socketClients.delete(ws)
 		end
