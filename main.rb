@@ -117,40 +117,42 @@ end
 
 def updateGame() 
 	loop do
-		sendGameState()
-		$GAME_STATE[:players] = serializedPlayers()
-		$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
-		#skip to end if all players have played cards
-		if ($GAME_STATE[:placedCards].length == $players.length - 1) && ($GAME_STATE[:currentScene] == 0) && ($GAME_STATE[:timer] > 5) 
-			$GAME_STATE[:timer] = 1
-		end
-		if $GAME_STATE[:timer] <= 0 
-			$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
-			if $GAME_STATE[:currentScene] == 0 #people are choosing cards
-				$GAME_STATE[:chosenCard] = -1
-				$GAME_STATE[:placedCards] = [] #delete all the previous cards
-				$GAME_STATE[:blackCard] = rand(0 .. $NUMBER_OF_BLACK_CARDS - 1)
-				$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
-				$players.each_with_index do |cP, index|
-					if index == $GAME_STATE[:cardChooser] #ensure the card chooser can't place a card and stuff
+		if $players.length > 2
+			sendGameState()
+			$GAME_STATE[:players] = serializedPlayers()
+			$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
+			#skip to end if all players have played cards
+			if ($GAME_STATE[:placedCards].length == $players.length - 1) && ($GAME_STATE[:currentScene] == 0) && ($GAME_STATE[:timer] > 5) 
+				$GAME_STATE[:timer] = 1
+			end
+			if $GAME_STATE[:timer] <= 0 
+				$GAME_STATE[:currentScene] = ($GAME_STATE[:currentScene] + 1) % 2
+				if $GAME_STATE[:currentScene] == 0 #people are choosing cards
+					$GAME_STATE[:chosenCard] = -1
+					$GAME_STATE[:placedCards] = [] #delete all the previous cards
+					$GAME_STATE[:blackCard] = rand(0 .. $NUMBER_OF_BLACK_CARDS - 1)
+					$GAME_STATE[:cardChooser] = ($GAME_STATE[:cardChooser] + 1) % $players.length
+					$players.each_with_index do |cP, index|
+						if index == $GAME_STATE[:cardChooser] #ensure the card chooser can't place a card and stuff
+							cP.can_place_cards = false
+							cP.is_card_chooser = true
+						else
+							cP.can_place_cards = true
+							cP.is_card_chooser = false
+						end
+					end
+				elsif $GAME_STATE[:currentScene] == 1 #the card chooser is choosing the best card
+					$players.each do |cP|
 						cP.can_place_cards = false
-						cP.is_card_chooser = true
-					else
-						cP.can_place_cards = true
-						cP.is_card_chooser = false
 					end
 				end
-			elsif $GAME_STATE[:currentScene] == 1 #the card chooser is choosing the best card
-				$players.each do |cP|
-					cP.can_place_cards = false
-				end
+				$GAME_STATE[:timer] = $MAX_TIME
 			end
-			$GAME_STATE[:timer] = $MAX_TIME
-		end
-		#once black card and everything is chosen, resend inventory
-		$socketClients.each do |ws|
-			if (!ws.error?)
-				sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
+			#once black card and everything is chosen, resend inventory
+			$socketClients.each do |ws|
+				if (!ws.error?)
+					sendInventory(ws, getPlayerFromIP(getSockIP(ws)))
+				end
 			end
 		end
 		sleep 1
