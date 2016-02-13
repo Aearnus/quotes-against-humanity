@@ -74,7 +74,7 @@ end
 #--------GAME OPTIONS--------
 $CARDS = File.read("public/cards.json")
 $BLACK_CARDS = File.read("public/blackCards.json")
-$NUMBER_OF_WHITE_CARDS = 390
+$NUMBER_OF_WHITE_CARDS = 393
 $NUMBER_OF_BLACK_CARDS = 102
 $CARDS_IN_A_HAND = 12
 $MAX_TIME = 40
