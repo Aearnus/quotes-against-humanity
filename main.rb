@@ -78,6 +78,7 @@ $NUMBER_OF_WHITE_CARDS = 413
 $NUMBER_OF_BLACK_CARDS = 116
 $CARDS_IN_A_HAND = 12
 $MAX_TIME = 40
+$MIN_PLAYERS = 1
 #--------GAME FUNCTIONS--------
 class Player
 	attr_accessor :card_inventory, :can_place_cards, :points, :is_card_chooser
@@ -117,7 +118,7 @@ end
 
 def updateGame() 
 	loop do
-		if $players.length > 2
+		if $players.length >= $MIN_PLAYERS
 			sendGameState()
 			$GAME_STATE[:players] = serializedPlayers()
 			$GAME_STATE[:timer] = $GAME_STATE[:timer] - 1
